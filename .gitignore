@@ -1,0 +1,7 @@
+git
+.idea
+npm-debug.log
+gouren_server/node_modules
+dist
+./dist
+/node_modules
