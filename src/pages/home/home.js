@@ -6,11 +6,33 @@ const { SubMenu } = Menu;
 const { Header, Content, Sider } = Layout;
 
 export default class Home extends Component{
-	
-	onOpenChange(){
-
+	constructor(props) {
+		super(props)
+		this.state = {
+			openKeys:[]
+		}
+	}
+	onOpenChange = (openKeys)=>{
+		if(openKeys.length === 1 || openKeys.length === 0){
+			this.setState({
+				openKeys
+			})
+			return
+		}
+		//判断点击的是不是同一个
+		const latestOpenKey = openKeys[openKeys.length -1]
+		if(latestOpenKey.includes(openKeys[0])){
+			this.setState({
+				openKeys
+			})
+		}else{
+			this.setate({
+				openKeys:[latestOpenKey]
+			})
+		}
 	}
 	render(){
+		const {openKeys} = this.state
 		return (
 			<Layout className="home_page">
 			    <Header className="header">
@@ -29,9 +51,8 @@ export default class Home extends Component{
 			      <Sider width={200} style={{ background: '#fff' }}>
 			        <Menu
 			          mode="inline"
-			          onOpenChange = {()=>this.onOpenChange()}
-			          defaultSelectedKeys={['1']}
-			          defaultOpenKeys={['sub1']}
+			          onOpenChange = {this.onOpenChange}
+			          openKeys={openKeys}
 			          style={{ height: '100%', borderRight: 0 }}
 			        >
 						<SubMenu
@@ -142,3 +163,4 @@ export default class Home extends Component{
 		)
 	}
 }
+
