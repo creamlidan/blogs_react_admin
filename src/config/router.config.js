@@ -3,7 +3,6 @@ import { BrowserRouter, Route,Switch} from 'react-router-dom'
 import Login from '../pages/login/login'
 import MyLayout from '../pages/frame/frame'
 import UserList from '../pages/user/userList.js'
-import Home from '../pages/home.js'
 
 class RouterMap extends Component {
   render() {
@@ -13,9 +12,9 @@ class RouterMap extends Component {
 			<Switch>
 				<Route path="/login" component={Login} />
 				<MyLayout>
-					<Route path="/userList" component={UserList} />
-					<Route path="/writeArticle" component={Home} />
-				</MyLayout>
+					<Route path="/user/List" component={UserList} />
+					<Route path="/writeArticle" component={UserList} />
+					</MyLayout>
 			</Switch>
       	</BrowserRouter>
     )

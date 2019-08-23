@@ -8,7 +8,6 @@ const { Header, Content, Sider } = Layout;
 
 export default class Frame extends Component{
 	constructor(props) {
-		console.log(props)
 		super(props)
 		this.state = {
 			openKeys:[]
@@ -73,11 +72,19 @@ export default class Frame extends Component{
 			            minHeight: 280,
 			          }}
 			        >
-			        { this.props.children }
+			        {this.props.location.pathname=="/"?this._renderStatic():this.props.children}
 			        </Content>
 			      </Layout>
 			    </Layout>
   			</Layout>
+		)
+	}
+	_renderStatic(){
+		return (
+			<div>
+				<h2>欢迎来到博客后台管理系统！</h2>
+				<p>请在使用前仔细阅读以下内容:</p>
+			</div>
 		)
 	}
 

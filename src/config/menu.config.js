@@ -6,7 +6,7 @@ export default [
 		menuItem:[{
 			key:1,
 			item_text:"用户列表",
-			path:'/userList'
+			path:'/userManage/List'
 		}]
 	},
 	{
@@ -20,7 +20,7 @@ export default [
 		},{
 			key:3,
 			item_text:"文章创作",
-			path:'/writeArticle'
+			path:'/article/write'
 		}]
 	},{
 		key:"leave",
