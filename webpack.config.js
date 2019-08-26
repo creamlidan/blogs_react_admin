@@ -5,6 +5,7 @@ module.exports = {
   entry: path.join(__dirname, './src/main.js'),
   output: {
     path: path.join(__dirname, './dist'),
+    publicPath: '/',
     filename: 'bundle.js'
   },
   plugins: [ // 插件

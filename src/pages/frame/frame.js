@@ -2,15 +2,21 @@ import React,{Component} from 'react'
 import './frame.less'
 import menuList from '../../config/menu.config.js'
 import { Link } from 'react-router-dom'
-import { Layout, Menu, Breadcrumb, Icon } from 'antd';
+import { Layout, Menu, Icon } from 'antd';
+import PropTypes from "prop-types";
+import BreadcrumbCustom from '../breadcrumbCustom/breadcrumbCustom'
 const { SubMenu } = Menu;
 const { Header, Content, Sider } = Layout;
 
-export default class Frame extends Component{
-	constructor(props) {
-		super(props)
+class Frame extends Component{
+	static contextTypes ={
+		router:PropTypes.object
+	}
+	constructor(props,context) {
+		super(props,context)
 		this.state = {
-			openKeys:[]
+			openKeys:[],
+			selectedKeys:[]
 		}
 	}
 	onOpenChange = (openKeys)=>{
@@ -32,6 +38,11 @@ export default class Frame extends Component{
 			})
 		}
 	}
+	handleClick = (key)=>{
+		this.setState({
+			current:key
+		})
+	}
 	render(){
 		const {openKeys} = this.state
 		let SubMenuList = [];
@@ -43,7 +54,7 @@ export default class Frame extends Component{
 			    <Header className="header">
 			      <div className="logo">
 			      	<div className="logo_img">
-			      		<img src="src/static/images/logo.png"/>
+			      		<img src="/src/static/images/logo.png"/>
 			      	</div>
 			      	<h1>react-blog</h1>
 			      </div>
@@ -58,12 +69,14 @@ export default class Frame extends Component{
 			          mode="inline"
 			          onOpenChange = {this.onOpenChange}
 			          openKeys={openKeys}
+			          selectedKeys={[this.state.current]}
 			          style={{ height: '100%', borderRight: 0 }}
 			        >
 			        	{SubMenuList}
 			        </Menu>
 			      </Sider>
 			      <Layout style={{ padding: '12px' }}>
+			      	<BreadcrumbCustom/>
 			        <Content
 			          style={{
 			            background: '#fff',
@@ -106,8 +119,24 @@ export default class Frame extends Component{
         </SubMenu>
 	};
 	_renderMenuItem(Item){
-		return <Menu.Item key={Item.key}>
+		return <Menu.Item key={Item.key}
+			onClick={()=>this.handleClick(Item.key)}>
 			<Link to={Item.path}>{Item.item_text}</Link>
 		</Menu.Item>
 	}
+	componentWillMount() {
+		let routerData = this.context.router.history.location.pathname.split('/').filter(i=>i)
+    	this.onOpenChange([routerData[0]]);
+    	menuList.forEach((item,index)=>{
+    		if(item.key == routerData[0]){
+    			let itemData = item.menuItem;
+    			for(let i = 0; i < itemData.length; i++){
+    				if(itemData[i].name == routerData[1]){
+    					this.handleClick(itemData[i].key)
+    				}
+    			}
+    		}
+    	})
+  	}
 }
+export default Frame
