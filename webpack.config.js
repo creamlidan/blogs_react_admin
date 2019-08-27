@@ -8,6 +8,13 @@ module.exports = {
     publicPath: '/',
     filename: 'bundle.js'
   },
+  //路径别名
+  resolve:{
+    alias: {
+      '@c': path.resolve('src/cache'),
+      '@p':path.resolve('src/public')
+    }
+  },
   plugins: [ // 插件
     new htmlWebpackPlugin({
       template: path.join(__dirname, './src/index.html'),
@@ -58,6 +65,14 @@ module.exports = {
   devServer: {
     historyApiFallback: {
       disableDotRule: true
+    },
+    proxy: {
+      '/api/*': {
+        target: 'http://localhost:8088',
+        host: 'http://localhost:8088',
+        changeOrigin: true,
+        secure: false
+      }
     }
   }
 }

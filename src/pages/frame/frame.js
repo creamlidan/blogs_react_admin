@@ -16,7 +16,7 @@ class Frame extends Component{
 		super(props,context)
 		this.state = {
 			openKeys:[],
-			selectedKeys:[]
+			current:null
 		}
 	}
 	onOpenChange = (openKeys)=>{
@@ -137,6 +137,15 @@ class Frame extends Component{
     			}
     		}
     	})
+  	}
+  	componentWillReceiveProps(){
+  		let routerData = this.context.router.history.location.pathname.split('/').filter(i=>i)
+  		if(routerData.length == 0){
+  			this.setState({
+  				openKeys:[],
+  				current:null
+  			})
+  		}
   	}
 }
 export default Frame
