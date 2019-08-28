@@ -1,11 +1,13 @@
 import React,{ Component } from 'react';
 import {
 	Row,Col,Card,Form,Input,Button,
-	Table,notification,Popconfirm,Switch,Tag,Select
+	Table,notification,Popconfirm,Switch,Tag,Select,Typography,Icon
 } from 'antd';
 import { user } from '@c/api'
-const FormItem = Form.Item;
+const FormItem = Form.Item,
+	{ Paragraph } = Typography;
 import moment from 'moment';
+import './userList.less'
 export default class userList extends Component {
 	constructor(props){
 		super(props);
@@ -15,6 +17,8 @@ export default class userList extends Component {
 			pageSize: 10,
 			useList:null,
 			total:null,
+			keyword: '',
+      		type: '', // 1 :其他友情用户 2: 是管理员的个人用户 ,'' 代表所有用户
 			columns: [
 		        {
 		          title: '用户名',
@@ -25,67 +29,77 @@ export default class userList extends Component {
 		        },{
 		          title: '头像',
 		          dataIndex: 'user_image',
+		          render: (text, record) =>(
+		          	<Paragraph copyable>copy image_url</Paragraph>
+		          )
 		        },{
 		          title: '类型',
 		          dataIndex: 'user_type',
-		          // 0：管理员 1：其他用户
+		          // 0：管理员 1:普通用户
 		          render: val =>
 		            !val ? <Tag color="green">管理员</Tag> : <Tag color="blue">普通用户</Tag>,
+		        },{
+		          title: '用户状态',
+		          dataIndex: 'user_status',
+		          // 0：禁用 1：启用
+		          render: (val,record) =>
+		            val ? <Popconfirm title="确定禁止此用户操作?" onConfirm={() => this.handleSetting(val,record,0)}>
+							<Tag color="green">启用 <Icon type="setting" /></Tag>
+			            </Popconfirm>
+			            : <Popconfirm title="恢复此用户操作?" onConfirm={() => this.handleSetting(val, record,1)}>
+							<Tag color="red">禁用 <Icon type="setting" /></Tag>
+			            </Popconfirm>
 		        },{
 		          title: '创建时间',
 		          dataIndex: 'create_time',
 		          sorter: true,
 		          render: val => <span>{moment(val).format('YYYY-MM-DD HH:mm:ss')}</span>,
-		        },{
-		          title: '操作',
-		          render: (text, record) => (
-		            <Popconfirm title="Sure to delete?" onConfirm={() => this.handleDelete(text, record)}>
-		              <a href="javascript:;">Delete</a>
-		            </Popconfirm>
-		          ),
-		        },
+		        }
 		    ],
 		    userList:[]
 		}
 	}
+	//渲染搜索板块
 	_renderSimpleForm = ()=>{
-		<Form layout="inline" style={{ marginBottom: '20px' }}>
-	        <Row gutter={{ md: 8, lg: 24, xl: 48 }}>
-	          <Col md={24} sm={24}>
-	            <FormItem>
-	              <Input
-	                placeholder="用户名"
-	                value={this.state.keyword}
-	                onChange={this.handleChangeKeyword}
-	              />
-	            </FormItem>
-	            <Select
-	              style={{ width: 200, marginRight: 20 }}
-	              placeholder="选择类型"
-	              onChange={this.handleChangeType}
-	            >
-	              <Select.Option value="">所有</Select.Option>
-	              <Select.Option value="1">其他用户</Select.Option>
-	              <Select.Option value="2">管理员</Select.Option>
-	            </Select>
-	            <span>
-	              <Button
-	                onClick={this.handleSearch}
-	                style={{ marginTop: '3px' }}
-	                type="primary"
-	                icon="search"
-	              >
-	                Search
-	              </Button>
-	            </span>
-	          </Col>
-	        </Row>
-      </Form>
+		return(
+			<Form layout="inline" style={{ marginBottom: '20px' }}>
+		        <Row gutter={{ md: 8, lg: 24, xl: 48 }}>
+		          <Col md={24} sm={24}>
+		            <FormItem>
+		              <Input
+		                placeholder="用户名"
+		                value={this.state.keyword}
+		                onChange={this.handleChangeKeyword}
+		              />
+		            </FormItem>
+		            <Select
+		              style={{ width: 200, marginRight: 20 }}
+		              placeholder="选择类型"
+		              onChange={this.handleChangeType}
+		            >
+		              <Select.Option value="">所有</Select.Option>
+		              <Select.Option value="1">普通用户</Select.Option>
+		              <Select.Option value="2">管理员</Select.Option>
+		            </Select>
+		            <span>
+		              <Button
+		                onClick={this.handleSearch}
+		                style={{ marginTop: '3px' }}
+		                type="primary"
+		                icon="search"
+		              >
+		                Search
+		              </Button>
+		            </span>
+		          </Col>
+		        </Row>
+      		</Form>
+		)
 	}
 	componentDidMount(){
 		this.getData();
-		console.log("22")
 	}
+	//初始化数据
 	getData(){
 		user.userList().then(res=>{
 			let userList = [...this.state.userList]
@@ -96,20 +110,8 @@ export default class userList extends Component {
 			})
 		})
 	}
-	shouldComponentUpdate(nextProps,nextState){
-            //this.props.**   this.state.**表示旧的值
-            //nextProps为最新传递过来的值 ，nextState为新的值
-        console.log("shouldCompontentUpdate组件是否要被重新渲染");
-        console.log(this.state.userList)
-        if(this.state.userList !== nextState.userList){
-        	return true;
-        }else{
-        	return false;
-        }
-    }
     render() {
 	    const { pageNum, pageSize,total,columns } = this.state;
-	    console.log("渲染了")
 	    const pagination = {
 	      total,
 	      defaultCurrent: pageNum,
@@ -135,4 +137,66 @@ export default class userList extends Component {
       		</div>
         )
     }
+    //禁止此用户在论坛操作
+    handleSetting(text, record,status){
+		let userList = [...this.state.userList]
+		for(let i = 0; i < userList.length; i++){
+			if(userList[i].key == record.key){
+				userList[i].user_status = status;
+				break;
+			}
+		}
+		this.setState({
+			userList
+		})
+    }
+    //修改type
+    handleChangeType = (type)=> {
+	    this.setState(
+	      {
+	        type,
+	      },
+	      () => {
+	        this.handleSearch();
+	      }
+	    );
+  	}
+	//修改搜索关键词
+	handleChangeKeyword = (event)=> {
+		this.setState({
+		  keyword: event.target.value,
+		});
+	}
+    //搜索用户
+    handleSearch = ()=>{
+		this.setState({
+      		loading: true,
+    	});
+    	const params = {
+	      keyword: this.state.keyword,
+	      type: this.state.type,
+	      pageNum: this.state.pageNum,
+	      pageSize: this.state.pageSize,
+    	};
+    	user.searchUserList(params).then(res=>{
+    		let userList = []
+			userList = userList.concat(res.data.userList)
+			this.setState({
+				userList,
+				loading:false
+			})
+    	})
+    }
+    //改变一页展示的数据条数
+    handleChangePageParam = (pageNum, pageSize)=>{
+	    this.setState(
+			{
+				pageNum,
+				pageSize,
+			},
+			() => {
+				this.handleSearch();
+			}
+	    );
+  	}
 }

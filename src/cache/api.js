@@ -31,7 +31,39 @@ export const user = {
 	    }).catch(function (error) {
 	        return requestHandle(error.response);
 	    });
-	}
+	},
+  searchUserList(params){
+    let url= "/api/searchUserList";
+    return axios.post(url,{
+      params:params
+    }).then(res=>{
+        return requestHandle(res);
+    }).catch(function (error) {
+        return requestHandle(error.response);
+    });
+  }
+}
+export const article = {
+  articleList(){
+    let url= "/api/articleList";
+    return axios.get(url,{
+          open_id:getLocalStore("open_id")
+      }).then(res=>{
+          return requestHandle(res);
+      }).catch(function (error) {
+          return requestHandle(error.response);
+      });
+  },
+  searchArticleList(params){
+    let url= "/api/searchArticleList";
+    return axios.post(url,{
+      params:params
+    }).then(res=>{
+        return requestHandle(res);
+    }).catch(function (error) {
+        return requestHandle(error.response);
+    });
+  }
 }
 
 //处理接收到的数据参数
