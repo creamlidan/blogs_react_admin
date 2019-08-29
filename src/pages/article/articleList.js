@@ -23,7 +23,7 @@ export default class ArticleList extends Component{
 					title: '标题',
 					dataIndex: 'title',
 					render: val => <div title={val}>
-							<Paragraph copyable>{val.substring(0,12)}...</Paragraph>
+							<Paragraph copyable>{val.substring(0,6)}...</Paragraph>
 						</div>
 		        },{
 		          title: '作者',
@@ -60,7 +60,7 @@ export default class ArticleList extends Component{
 					sorter: true,
 					render: val => <span>{moment(val).format('YYYY-MM-DD HH:mm:ss')}</span>
 		        },{
-					title: '原创状态',
+					title: '状态',
 					dataIndex: 'status',
 					sorter: true,
 					render: (val,record) =>
@@ -70,6 +70,10 @@ export default class ArticleList extends Component{
 				            : <Popconfirm title="确定马上发布?" onConfirm={() => this.handleSetting(val, record,1)}>
 								<Tag color="red">草稿<Icon type="setting" /></Tag>
 				            </Popconfirm>
+		        },{
+					title: '是否原创',
+					dataIndex: 'isAuto',
+					render: val => val == 0?<Tag color="green">原创</Tag>:(val == 1?<Tag color="blue">混合</Tag>:<Tag color="volcano">转载</Tag>)
 		        }
 		    ],
 		    articleList:[]

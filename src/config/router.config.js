@@ -17,7 +17,7 @@ class RouterMap extends Component {
 					<MyLayout>
 						<Route path="/userManage/list" component={UserList}/>
 						<Route path="/article/list" component={ArticleList}/>
-						<Route path="/article/wirte" component={ArticleWrite}/>
+						<Route path="/article/write" component={ArticleWrite}/>
 						<Route path="/leave/list" component={LeaveList}/>
 					</MyLayout>
 				</Switch>

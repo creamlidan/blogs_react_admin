@@ -77,6 +77,8 @@ app.get("/api/articleList",function(req,res){
                 'interactionNums|1':[[2,3,5],[2,5,6],[5,6,7]],
                 createTime:Mock.Random.date(),
                 'status|1':[0,1,1,0,1,0,0],
+                desc:Mock.mock('@cparagraph()'),
+                'isAuto|1':[1,1,1,0,0,2,1,2],
                 'key|+1':1
             }],
             total:200
@@ -100,6 +102,8 @@ app.post("/api/searchArticleList",function(req,res){
                 'interactionNums|1':[[2,3,5],[2,5,6],[5,6,7]],
                 createTime:Mock.Random.date(),
                 'status|1':[0,1,1,0,1,0,0],
+                desc:Mock.mock('@cparagraph()'),
+                'isAuto|1':[1,1,1,0,0,2,1,2],
                 'key|+1':1
             }],
             total:200
