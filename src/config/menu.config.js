@@ -65,16 +65,6 @@ export default [
 			item_text:'项目列表',
 			path:'/project/list'
 		}]
-	},{
-		key:'imageManage',
-		icon:'picture',
-		menu_text:'图片',
-		menuItem:[{
-			key:'8',
-			name:'list',
-			item_text:'图片管理',
-			path:'/imageManage/list'
-		}]
 	},
 	{
 		key:'me',

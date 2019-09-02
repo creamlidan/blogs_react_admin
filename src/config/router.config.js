@@ -6,7 +6,9 @@ import UserList from '../pages/user/userList'
 import ArticleList from '../pages/article/articleList'
 import ArticleWrite from '../pages/article/articleWrite'
 import LeaveList from '../pages/leave/leaveList'
-
+import LabelList from '../pages/label/labelList'
+import ClassifyList from '../pages/classify/classifyList'
+import ProjectList from '../pages/project/projectList'
 class RouterMap extends Component {
 	render() {
 		const  {props} = this;
@@ -19,6 +21,9 @@ class RouterMap extends Component {
 						<Route path="/article/list" component={ArticleList}/>
 						<Route path="/article/write" component={ArticleWrite}/>
 						<Route path="/leave/list" component={LeaveList}/>
+						<Route path="/label/list" component={LabelList}/>
+						<Route path="/classify/list" component={ClassifyList}/>
+						<Route path="/project/list" component={ProjectList}/>
 					</MyLayout>
 				</Switch>
 		  	</BrowserRouter>

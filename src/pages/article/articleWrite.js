@@ -1,5 +1,5 @@
 import React,{ Component } from 'react';
-import { Form, Icon, Input, Button,Select} from 'antd';
+import { Form, Icon, Input, Button,Select,message} from 'antd';
 const { Option } = Select;
 import LzEditor from 'react-lz-editor'
 import ReactMarkdown from 'react-markdown';
@@ -39,7 +39,11 @@ class ArticleWrite extends Component{
 	    e.preventDefault();
 	    this.props.form.validateFields((err, values) => {
 	      if (!err) {
-	        console.log('Received values of form: ', values);
+	      	if(this.state.content !== ''){
+	      		console.log('Received values of form: ', values);
+	      	}else{
+				message.error('文字内容必须填写');
+	      	}
 	      }
 	    });
 	};
@@ -58,53 +62,55 @@ class ArticleWrite extends Component{
 			        <Form.Item>
 						{getFieldDecorator('author', {
 							rules: [{ required: true, message: '请输入作者!' }],
+							initialValue:this.state.author
 						})(
-							<Input addonBefore="作者" defaultValue="liDan"/>,
+							<Input addonBefore="作者"/>,
 						)}
 			        </Form.Item>
 			        <Form.Item>
-						{getFieldDecorator('title', {
+						{getFieldDecorator('keyword', {
 							rules: [{ required: true, message: '请输入关键词!' }],
 						})(
 							<Input addonBefore="关键词" placeholder="关键词"/>,
 						)}
 			        </Form.Item>
 			        <Form.Item>
-						{getFieldDecorator('title', {
+						{getFieldDecorator('desc', {
 							rules: [{ required: true, message: '请输入描述!' }],
 						})(
 							<Input addonBefore="描述" placeholder="描述"/>,
 						)}
 			        </Form.Item>
 			        <Form.Item>
-						{getFieldDecorator('title', {
+						{getFieldDecorator('coverPlan', {
 							rules: [{ required: true, message: '请输入封面链接!' }],
 						})(
 							<Input addonBefore="封面链接" placeholder="封面链接"/>,
 						)}
 			        </Form.Item>
-			        <Form.Item label="inline">
+			        <Form.Item>
 						<Form.Item style={{ display: 'inline-block', width: 180, marginRight:6 }}>
-							<Select defaultValue="发布" onChange={this.handleChange}>
+							<Select defaultValue="0" onChange={this.handleChange}>
+								<Option value="0">原创</Option>
+								<Option value="1">混合</Option>
+								<Option value="1">转载</Option>
+						    </Select>
+						</Form.Item>
+						<Form.Item style={{ display: 'inline-block', width: 180, marginRight:6 }}>
+							<Select defaultValue="1" onChange={this.handleChange}>
 								<Option value="1">发布</Option>
 								<Option value="0">草稿</Option>
 						    </Select>
 						</Form.Item>
-						<Form.Item style={{ display: 'inline-block', width: 180, marginRight:6 }}>
-							<Select defaultValue="发布" onChange={this.handleChange}>
-								<Option value="1">发布</Option>
-								<Option value="0">草稿</Option>
-						    </Select>
-						</Form.Item>
-						<Form.Item  style={{ width: 180,marginRight:6}}>
-							{getFieldDecorator('title', {
+						<Form.Item  style={{display: 'inline-block', width: 180,marginRight:6}}>
+							{getFieldDecorator('tag', {
 								rules: [{ required: true, message: '请输入标签!' }],
 							})(
 								<Input placeholder="标签"/>
 							)}
 			        	</Form.Item>
-			        	<Form.Item  style={{ width: 180,marginRight:6}}>
-							{getFieldDecorator('title', {
+			        	<Form.Item  style={{display: 'inline-block',width: 180,marginRight:6}}>
+							{getFieldDecorator('classify', {
 								rules: [{ required: true, message: '请输入文章分类!' }],
 							})(
 								<Input placeholder="文章分类"/>
@@ -112,10 +118,7 @@ class ArticleWrite extends Component{
 			        	</Form.Item>
 			        </Form.Item>
 			        <Form.Item>
-			        	{getFieldDecorator('content', {
-							rules: [{ required: true, message: '请输入文章分类!' }],
-						})(
-							<LzEditor
+			        	<LzEditor
 							active={true}
 							importContent={this.state.markdownContent}
 							cbReceiver={this.receiveHtml}
@@ -123,10 +126,9 @@ class ArticleWrite extends Component{
 							video={false}
 							audio={false}
 							convertFormat="markdown"/>
-						)}
 			        </Form.Item>
 			        <Form.Item>
-			          <Button type="primary" htmlType="submit" disabled={hasErrors(getFieldsError())}>提交</Button>
+			          <Button type="primary" htmlType="submit">提交</Button>
 			        </Form.Item>
 				</Form>
 			</div>

@@ -36,7 +36,7 @@ export default class ArticleList extends Component{
 					title: '封面图',
 					dataIndex: 'coverPlan',
 					render: val => <div 
-						style={{width:'50px',height:'30px',display:'flex',alignItems:'center',justifyContent:'center'}} 
+						style={{width:'50px',height:'30px',display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden'}} 
 						className="coverPlan_wrap"><img src={val} style={{width:'100%'}}/></div>
 		        },{
 					title: '标签',
@@ -165,7 +165,6 @@ export default class ArticleList extends Component{
         )
 	}
 	handleSetting(val,record,status){
-		console.log(record)
 		let articleList = [...this.state.articleList]
 		for(let i = 0; i < articleList.length; i++){
 			if(articleList[i].key == record.key){
@@ -199,13 +198,8 @@ export default class ArticleList extends Component{
 		this.setState({
       		loading: true,
     	});
-    	const params = {
-	      keyword: this.state.keyword,
-	      type: this.state.type,
-	      pageNum: this.state.pageNum,
-	      pageSize: this.state.pageSize,
-    	};
-    	article.searchArticleList(params).then(res=>{
+    	let $state = this.state
+    	article.searchArticleList($state.keyword,$state.type,$state.pageNum,$state.pageSize).then(res=>{
     		let articleList = []
 			articleList = articleList.concat(res.data.articleList)
 			this.setState({

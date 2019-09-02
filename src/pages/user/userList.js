@@ -1,7 +1,8 @@
 import React,{ Component } from 'react';
 import {
 	Row,Col,Card,Form,Input,Button,
-	Table,notification,Popconfirm,Switch,Tag,Select,Typography,Icon
+	Table,notification,Popconfirm,Switch,Tag,Select,Typography,Icon,
+	Avatar
 } from 'antd';
 import { user } from '@c/api'
 const FormItem = Form.Item,
@@ -29,9 +30,7 @@ export default class userList extends Component {
 		        },{
 		          title: '头像',
 		          dataIndex: 'user_image',
-		          render: (text, record) =>(
-		          	<Paragraph copyable>copy image_url</Paragraph>
-		          )
+		          render: val => <Avatar src={val} />
 		        },{
 		          title: '类型',
 		          dataIndex: 'user_type',
@@ -172,13 +171,8 @@ export default class userList extends Component {
 		this.setState({
       		loading: true,
     	});
-    	const params = {
-	      keyword: this.state.keyword,
-	      type: this.state.type,
-	      pageNum: this.state.pageNum,
-	      pageSize: this.state.pageSize,
-    	};
-    	user.searchUserList(params).then(res=>{
+    	let $state = this.state
+    	user.searchUserList($state.keyword,$state.type,$state.pageNum,$state.pageSize).then(res=>{
     		let userList = []
 			userList = userList.concat(res.data.userList)
 			this.setState({
