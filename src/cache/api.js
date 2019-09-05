@@ -125,6 +125,17 @@ export const label ={
     }).catch(function (error) {
         return requestHandle(error.response);
     });
+  },
+  addLabel(label){
+    let url= "/api/replyContent";
+    return axios.post(url,{
+      open_id:getLocalStore("open_id"),
+      label
+    }).then(res=>{
+        return requestHandle(res);
+    }).catch(function (error) {
+        return requestHandle(error.response);
+    });
   }
 }
 export const classify ={
@@ -140,6 +151,17 @@ export const classify ={
         return requestHandle(error.response);
     });
   },
+  addClassify(classify){
+    let url= "/api/replyContent";
+    return axios.post(url,{
+      open_id:getLocalStore("open_id"),
+      classify
+    }).then(res=>{
+        return requestHandle(res);
+    }).catch(function (error) {
+        return requestHandle(error.response);
+    });
+  }
 }
 export const project ={
   projectList(){
@@ -166,6 +188,26 @@ export const project ={
         return requestHandle(error.response);
     });
   },
+  addProject(values){
+    let url= "/api/replyContent";
+    return axios.post(url,{
+      ...values
+    }).then(res=>{
+        return requestHandle(res);
+    }).catch(function (error) {
+        return requestHandle(error.response);
+    });
+  },
+  delProject(key){
+    let url= "/api/replyContent";
+    return axios.post(url,{
+      key
+    }).then(res=>{
+        return requestHandle(res);
+    }).catch(function (error) {
+        return requestHandle(error.response);
+    });
+  }
 }
 
 //处理接收到的数据参数

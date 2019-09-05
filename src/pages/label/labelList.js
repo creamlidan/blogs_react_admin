@@ -2,7 +2,7 @@ import React,{ Component } from 'react';
 import {
 	Row,Col,Card,Form,Input,Button,
 	Table,notification,Popconfirm,Switch,Tag,Select,Typography,Icon,
-	Avatar
+	Avatar,Modal,message
 } from 'antd';
 import { label } from '@c/api'
 const FormItem = Form.Item,
@@ -15,6 +15,7 @@ export default class LabelList extends Component {
 		this.state = {
 			loading: false,
 			keyword: '',
+			visible: false,
 			columns: [
 		        {
 		          title: '标题',
@@ -59,7 +60,7 @@ export default class LabelList extends Component {
 		                Search
 		              </Button>
 		              <Button
-		                onClick={this.handleAdd}
+		                onClick={this.showModal}
 		                style={{ marginTop: '3px' }}
 		                type="primary"
 		              >
@@ -85,6 +86,7 @@ export default class LabelList extends Component {
 		})
 	}
     render() {
+    	const { visible} = this.state;
         return (
       		<div className="">
         		<div className="">{this._renderSimpleForm()}</div>
@@ -95,6 +97,16 @@ export default class LabelList extends Component {
 					pagination={false}
 					dataSource={this.state.labelList}
 	            />
+	            <Modal
+		          title="新增标签"
+		          visible={visible}
+		          onOk={this.handleOk}
+		          onCancel={this.handleCancel}
+		          cancelText="取消"
+		          okText="确定"
+		        >
+		          <Input addonBefore="标签" onChange={this.changeLabel}/>
+		        </Modal>
       		</div>
         )
     }
@@ -131,4 +143,31 @@ export default class LabelList extends Component {
 			labelList
 		})
     }
+    showModal = () => {
+	    this.setState({
+			visible: true,
+	    });
+  	};
+  	handleOk = () => {
+  		if(this.state.addLabel){
+  			label.addLabel(this.state.addLabel).then(res=>{
+  				this.setState({
+					visible: false
+				});
+  			})
+  		}else{
+  			message.error('请输入需要添加的标签');
+  		}
+  	};	
+  	changeLabel = (event)=> {
+		this.setState({
+		  addLabel: event.target.value,
+		});
+	}
+	
+	handleCancel = () => {
+		this.setState({
+		  visible: false,
+		});
+	};
 }

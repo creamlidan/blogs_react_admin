@@ -23,23 +23,26 @@ export default class userList extends Component {
 			columns: [
 		        {
 		          title: '用户名',
-		          dataIndex: 'user_name',
+		          dataIndex: 'name',
+		        },{
+		          title: '密码',
+		          dataIndex: 'password',
 		        },{
 		          title: '邮箱',
-		          dataIndex: 'user_email',
+		          dataIndex: 'email',
 		        },{
 		          title: '头像',
-		          dataIndex: 'user_image',
+		          dataIndex: 'image',
 		          render: val => <Avatar src={val} />
 		        },{
 		          title: '类型',
-		          dataIndex: 'user_type',
+		          dataIndex: 'type',
 		          // 0：管理员 1:普通用户
 		          render: val =>
-		            !val ? <Tag color="green">管理员</Tag> : <Tag color="blue">普通用户</Tag>,
+		            !Boolean(val) ? <Tag color="green">管理员{Boolean(val)}</Tag> : <Tag color="blue">{Boolean(val)}普通用户</Tag>,
 		        },{
 		          title: '用户状态',
-		          dataIndex: 'user_status',
+		          dataIndex: 'status',
 		          // 0：禁用 1：启用
 		          render: (val,record) =>
 		            val ? <Popconfirm title="确定禁止此用户操作?" onConfirm={() => this.handleSetting(val,record,0)}>
@@ -52,8 +55,8 @@ export default class userList extends Component {
 		          title: '创建时间',
 		          dataIndex: 'create_time',
 		          sorter: true,
-		          render: val => <span>{moment(val).format('YYYY-MM-DD HH:mm:ss')}</span>,
-		        }
+		          render: val => <span>{moment(Number(val)).format('YYYY-MM-DD HH:mm:ss')}</span>,
+		        },
 		    ],
 		    userList:[]
 		}
@@ -78,7 +81,7 @@ export default class userList extends Component {
 		            >
 		              <Select.Option value="">所有</Select.Option>
 		              <Select.Option value="1">普通用户</Select.Option>
-		              <Select.Option value="2">管理员</Select.Option>
+		              <Select.Option value="0">管理员</Select.Option>
 		            </Select>
 		            <span>
 		              <Button
@@ -123,6 +126,7 @@ export default class userList extends Component {
 	        this.handleChangePageParam(current, pageSize);
 	      },
 	    };
+	    console.log('total---'+total)
         return (
       		<div className="">
         		<div className="">{this._renderSimpleForm()}</div>
@@ -132,6 +136,7 @@ export default class userList extends Component {
 					loading={this.state.loading}
 					bordered
 					dataSource={this.state.userList}
+					rowKey="_id"
 	            />
       		</div>
         )
@@ -177,6 +182,7 @@ export default class userList extends Component {
 			userList = userList.concat(res.data.userList)
 			this.setState({
 				userList,
+				total:res.data.total,
 				loading:false
 			})
     	})

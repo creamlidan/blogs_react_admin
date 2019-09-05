@@ -2,19 +2,24 @@ import React,{ Component } from 'react';
 import {
 	Row,Col,Card,Form,Input,Button,
 	Table,notification,Popconfirm,Switch,Tag,Select,Typography,Icon,
-	Avatar
+	Avatar,Modal,message,DatePicker,TextArea
 } from 'antd';
 import { project } from '@c/api'
 const FormItem = Form.Item,
-	{ Paragraph } = Typography;
+	{ Paragraph } = Typography,
+	{ Option } = Select;
 import moment from 'moment';
-import '../../static/css/common.less';
-export default class ProjectList extends Component {
+import './projectList.less'
+class ProjectList extends Component {
 	constructor(props){
 		super(props);
 		this.state = {
 			loading: false,
 			keyword: '',
+			visible: false,
+			addStartTime: null,
+		    addEndTime: null,
+		    endOpen: false,
 			columns: [
 		        {
 		          title: '标题',
@@ -52,7 +57,8 @@ export default class ProjectList extends Component {
 			            </Popconfirm>
 		        }
 		    ],
-		    projectList:[]
+		    projectList:[],
+		    addStatus:1
 		}
 	}
 	//渲染搜索板块
@@ -87,7 +93,7 @@ export default class ProjectList extends Component {
 		                Search
 		              </Button>
 		              <Button
-		                onClick={this.handleAdd}
+		                onClick={this.showModal}
 		                style={{ marginTop: '3px' }}
 		                type="primary"
 		              >
@@ -113,6 +119,9 @@ export default class ProjectList extends Component {
 		})
 	}
     render() {
+    	const { startValue, endValue, endOpen ,visible,addStatus} = this.state;
+    	const { getFieldDecorator ,getFieldsError} = this.props.form;
+    	const { TextArea } = Input;
         return (
       		<div className="">
         		<div className="">{this._renderSimpleForm()}</div>
@@ -123,9 +132,121 @@ export default class ProjectList extends Component {
 					pagination={false}
 					dataSource={this.state.projectList}
 	            />
+	            <Modal
+		          title="新增项目"
+		          visible={visible}
+		          onOk={this.handleSubmit}
+		          onCancel={this.handleCancel}
+		          cancelText="取消"
+		          okText="确定"
+		        >
+		        <Form onSubmit={this.handleSubmit} className="write-form">
+					<Form.Item label="标题" hasFeedback>
+						{getFieldDecorator('title', {
+							rules: [{ required: true, message: '请输入项目标题!' }],
+						})(
+							<Input placeholder="标题"/>
+						)}
+			        </Form.Item>
+			        <Form.Item label="描述" hasFeedback>
+						{getFieldDecorator('desc', {
+							rules: [{ required: true, message: '请输入项目描述!' }],
+						})(
+							<TextArea
+					          placeholder="描述"
+					          autosize={{ minRows: 3, maxRows: 5 }}
+					        />
+						)}
+			        </Form.Item>
+			        <Form.Item label="链接">
+						{getFieldDecorator('url', {
+							rules: [{ required: true, message: '请输入项目链接!' }],
+						})(
+							<Input placeholder="链接"/>
+						)}
+			        </Form.Item>
+			        <Form.Item label="项目时间">
+				        <Form.Item style={{ display: 'inline-block', width: 180, marginRight:'20px',marginBottom:'0px' }}>
+							{getFieldDecorator('startTime', {
+								rules: [{ required: true, message: '请选择项目开始时间!' }],
+							})(
+								<DatePicker
+						          disabledDate={this.disabledStartDate}
+						          showTime
+						          format="YYYY-MM-DD HH:mm:ss"
+						          placeholder="开始时间"
+						          onChange={this.onStartChange}
+						          onOpenChange={this.handleStartOpenChange}
+						        />
+							)}
+				        </Form.Item>
+			        	<Form.Item style={{ display: 'inline-block', width: 180,marginBottom:'0px'}}>
+							{getFieldDecorator('endTime', {
+								rules: [{ required: true, message: '请选择项目结束时间!' }],
+							})(
+								<DatePicker
+						          disabledDate={this.disabledEndDate}
+						          showTime
+						          format="YYYY-MM-DD HH:mm:ss"
+						          placeholder="结束时间"
+						          onChange={this.onEndChange}
+						          open={endOpen}
+						          onOpenChange={this.handleEndOpenChange}
+						        />
+							)}
+			        	</Form.Item>
+			        </Form.Item>
+			        <Form.Item label="项目状态">
+			        	<Select defaultValue="1" style={{ width: 120 }} onChange={this.handleChange}>
+					      <Option value="0">待上线</Option>
+					      <Option value="1">已上线</Option>
+					    </Select>
+			        </Form.Item>
+			    </Form>
+		        </Modal>
       		</div>
         )
     }
+
+    disabledStartDate = startValue => {
+	    const { endValue } = this.state;
+	    if (!startValue || !endValue) {
+	      return false;
+	    }
+	    return startValue.valueOf() > endValue.valueOf();
+	};
+
+	disabledEndDate = endValue => {
+	    const { startValue } = this.state;
+	    if (!endValue || !startValue) {
+	      return false;
+	    }
+	    return endValue.valueOf() <= startValue.valueOf();
+	};
+
+	onChange = (field, value) => {
+	    this.setState({
+	      [field]: value,
+	    });
+	};
+
+	onStartChange = value => {
+	   	this.onChange('startValue', value);
+	};
+
+	onEndChange = value => {
+	    this.onChange('endValue', value);
+	};
+
+	handleStartOpenChange = open => {
+	    if (!open) {
+	      this.setState({ endOpen: true });
+	    }
+	};
+
+	handleEndOpenChange = open => {
+		this.setState({ endOpen: open });
+	};
 	//修改搜索关键词
 	handleChangeKeyword = (event)=> {
 		this.setState({
@@ -142,22 +263,29 @@ export default class ProjectList extends Component {
 			projectList = projectList.concat(res.data.projectList)
 			this.setState({
 				projectList,
+				total:res.data.total,
 				loading:false
 			})
     	})
     }
+    handleChange = (value)=>{
+    	this.state.addStatus = value;
+	}
     //删除标签
     handleDelete(val){
-		let projectList = [...this.state.projectList]
-		for(let i = 0; i < projectList.length; i++){
-			if(projectList[i].key == val){
-				projectList.splice(i,1)
-				break;
+    	project.delProject(val).then(res=>{
+    		let projectList = [...this.state.projectList]
+			for(let i = 0; i < projectList.length; i++){
+				if(projectList[i].key == val){
+					projectList.splice(i,1)
+					break;
+				}
 			}
-		}
-		this.setState({
-			projectList
-		})
+			this.setState({
+				projectList
+			})
+    	})
+
     }
         //修改type
     handleChangeType = (type)=> {
@@ -170,4 +298,45 @@ export default class ProjectList extends Component {
 	      }
 	    );
   	}
+  	showModal = () => {
+	    this.setState({
+			visible: true,
+	    });
+  	};
+  	handleOk = () => {
+  		if(this.state.addLabel){
+  			
+  		}else{
+  			message.error('请输入需要添加的标签');
+  		}
+  	};	
+  	handleSubmit = e => {
+	    e.preventDefault();
+	    console.log(this.state.addStatus)
+	    this.props.form.validateFields((err, values) => {
+	      if (!err) {
+	      	values.startTime = values.startTime.valueOf()
+	      	values.endTime = values.endTime.valueOf()
+	      	values.status = this.state.addStatus
+	      	project.addProject(values).then(res=>{
+  				this.setState({
+					visible: false
+				});
+  			})
+	      }
+	    });
+	};
+  	changeLabel = (event)=> {
+		this.setState({
+		  addLabel: event.target.value,
+		});
+	}
+	
+	handleCancel = () => {
+		this.setState({
+		  visible: false,
+		});
+	};
 }
+
+export default Form.create({ name: 'normal_projectList' })(ProjectList);
