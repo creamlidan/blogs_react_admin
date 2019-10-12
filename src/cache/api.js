@@ -23,7 +23,7 @@ axios.interceptors.response.use(function(response){
 
 export const user = {
 	userList(){
-		let url= "/api/userList";
+		let url= "/api/user/List";
 		return axios.get(url,{
         params:{
           open_id:getLocalStore("open_id")
@@ -35,12 +35,23 @@ export const user = {
 	    });
 	},
   searchUserList(keyword,type,pageNum,pageSize){
-    let url= "/api/searchUserList";
+    let url= "/api/user/searchList";
     return axios.post(url,{
       keyword,
       type,
       pageNum,
       pageSize
+    }).then(res=>{
+        return requestHandle(res);
+    }).catch(function (error) {
+        return requestHandle(error.response);
+    });
+  },
+  changeStatus(id,status){
+    let url= "/api/user/changeStatus";
+    return axios.post(url,{
+      id,
+      status
     }).then(res=>{
         return requestHandle(res);
     }).catch(function (error) {

@@ -126,7 +126,6 @@ export default class userList extends Component {
 	        this.handleChangePageParam(current, pageSize);
 	      },
 	    };
-	    console.log('total---'+total)
         return (
       		<div className="">
         		<div className="">{this._renderSimpleForm()}</div>
@@ -143,16 +142,18 @@ export default class userList extends Component {
     }
     //禁止此用户在论坛操作
     handleSetting(text, record,status){
-		let userList = [...this.state.userList]
-		for(let i = 0; i < userList.length; i++){
-			if(userList[i].key == record.key){
-				userList[i].user_status = status;
-				break;
+    	user.changeStatus(record._id,status).then(res=>{
+			let userList = [...this.state.userList]
+			for(let i = 0; i < userList.length; i++){
+				if(userList[i]._id == record._id){
+					userList[i].status = status;
+					break;
+				}
 			}
-		}
-		this.setState({
-			userList
-		})
+			this.setState({
+				userList
+			})
+    	})
     }
     //修改type
     handleChangeType = (type)=> {
