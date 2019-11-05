@@ -19,18 +19,19 @@ export default class ClassifyList extends Component {
 			columns: [
 		        {
 		          title: '标题',
-		          dataIndex: 'title',
+		          dataIndex: 'classify_name',
 		        },{
 		          title: '创建时间',
-		          dataIndex: 'createTime',
+		          dataIndex: 'create_time',
 		          sorter: true,
 		          render: val => <span>{moment(val).format('YYYY-MM-DD HH:mm:ss')}</span>,
 		        },{
 		          title: '操作',
 		          dataIndex: 'id',
-		          // 0：禁用 1：启用
-		          render: val => <Popconfirm title="确定要删除此标签?" onConfirm={() => this.handleDelete(val)}>
-							<a href="">删除</a>
+		          render: (val,record) => 
+		          	record.classify_name == "其它"? <span style={{color:'#999'}}>不可删除</span>:
+		          		<Popconfirm title="如果此分类下有关联文章,将全部转移到'其它'分类下,确定要删除此分类?" onConfirm={() => this.handleDelete(val,record)}>
+							<Tag color="red">删除</Tag>
 			            </Popconfirm>
 		        }
 		    ],
@@ -78,7 +79,7 @@ export default class ClassifyList extends Component {
 	//初始化数据
 	getData(){
 		classify.classifyList().then(res=>{
-			let classifyList = [...this.state.classifyList]
+			let classifyList = [];
 			classifyList = classifyList.concat(res.data.classifyList)
 			this.setState({
 				classifyList
@@ -96,6 +97,7 @@ export default class ClassifyList extends Component {
 					bordered
 					pagination={false}
 					dataSource={this.state.classifyList}
+					rowKey="_id"
 	            />
 	            <Modal
 		          title="新增分类"
@@ -131,17 +133,24 @@ export default class ClassifyList extends Component {
     	})
     }
     //删除标签
-    handleDelete(val){
-		let classifyList = [...this.state.classifyList]
-		for(let i = 0; i < classifyList.length; i++){
-			if(classifyList[i].id == val){
-				classifyList.splice(i,1)
-				break;
-			}
-		}
-		this.setState({
-			classifyList
-		})
+    handleDelete(val,record){
+    	classify.delClassify(record._id).then(res=>{
+    		if(res.code == 200){
+    			message.error(res.data.message)
+    			let classifyList = [...this.state.classifyList]
+				for(let i = 0; i < classifyList.length; i++){
+					if(classifyList[i].id == record._id){
+						classifyList.splice(i,1)
+					}
+				}
+				this.setState({
+					classifyList
+				})
+    		}else{
+    			message.error("删除分类失败~")
+    		}
+    	})
+
     }
     showModal = () => {
 	    this.setState({
@@ -151,9 +160,15 @@ export default class ClassifyList extends Component {
   	handleOk = () => {
   		if(this.state.addClassify){
   			classify.addClassify(this.state.addClassify).then(res=>{
-  				this.setState({
-					visible: false
-				});
+  				if(res.code == 200){
+	  				message.success('添加成功~');
+	  				this.getData();
+	  				this.setState({
+						visible: false
+					});
+  				}else{
+  					message.error('分类添加失败');
+  				}
   			})
   		}else{
   			message.error('请输入需要添加的分类');

@@ -16,6 +16,7 @@ class ProjectList extends Component {
 		this.state = {
 			loading: false,
 			keyword: '',
+			searchStatus:null,
 			visible: false,
 			addStartTime: null,
 		    addEndTime: null,
@@ -23,42 +24,43 @@ class ProjectList extends Component {
 			columns: [
 		        {
 		          title: '标题',
-		          dataIndex: 'title',
+		          dataIndex: 'project_name',
 		        },{
 		          title: '描述',
-		          dataIndex: 'desc',
+		          dataIndex: 'project_desc',
 		          render: val => <div title={val}>
 							<Paragraph copyable>{val.substring(0,6)}...</Paragraph>
 						</div>
 		        },{
 		          title: '链接',
-		          dataIndex: 'url',
+		          dataIndex: 'project_url',
 		          render: val => <Paragraph copyable>{val}</Paragraph>,
 		        },{
 		          title: '开始时间',
-		          dataIndex: 'startTime',
+		          dataIndex: 'project_startTime',
 		          render: val => <span>{moment(val).format('YYYY-MM-DD HH:mm:ss')}</span>,
 		        },{
 		          title: '结束时间',
-		          dataIndex: 'endTime',
+		          dataIndex: 'project_endTime',
 		          render: val => <span>{moment(val).format('YYYY-MM-DD HH:mm:ss')}</span>,
 		        },{
 		          title: '状态',
-		          dataIndex: 'status',
+		          dataIndex: 'project_status',
 		          // 0：已上线 1：未上线
 		          render: val => 
-		          	!val ? <Tag color="green">已上线</Tag>:<Tag color="red">未上线</Tag>
+		          	val ? <span style={{color:"green"}}>已上线</span>:<span style={{color:"red"}}>未上线</span>
 		        },{
 		          title: '操作',
-		          dataIndex: 'key',
+		          dataIndex: 'id',
 		          // 0：禁用 1：启用
-		          render: val => <Popconfirm title="确定要删除此项目?" onConfirm={() => this.handleDelete(val)}>
-							<a href="">删除</a>
-			            </Popconfirm>
+		          render: (val,record) => 
+		          	<Popconfirm title="确定要删除此项目?" onConfirm={() => this.handleDelete(val,record)}>
+						<a href="">删除</a>
+		            </Popconfirm>
 		        }
 		    ],
 		    projectList:[],
-		    addStatus:1
+		    projctStatus:1
 		}
 	}
 	//渲染搜索板块
@@ -131,6 +133,7 @@ class ProjectList extends Component {
 					bordered
 					pagination={false}
 					dataSource={this.state.projectList}
+					rowKey="_id"
 	            />
 	            <Modal
 		          title="新增项目"
@@ -142,14 +145,14 @@ class ProjectList extends Component {
 		        >
 		        <Form onSubmit={this.handleSubmit} className="write-form">
 					<Form.Item label="标题" hasFeedback>
-						{getFieldDecorator('title', {
+						{getFieldDecorator('project_name', {
 							rules: [{ required: true, message: '请输入项目标题!' }],
 						})(
 							<Input placeholder="标题"/>
 						)}
 			        </Form.Item>
 			        <Form.Item label="描述" hasFeedback>
-						{getFieldDecorator('desc', {
+						{getFieldDecorator('project_desc', {
 							rules: [{ required: true, message: '请输入项目描述!' }],
 						})(
 							<TextArea
@@ -159,7 +162,7 @@ class ProjectList extends Component {
 						)}
 			        </Form.Item>
 			        <Form.Item label="链接">
-						{getFieldDecorator('url', {
+						{getFieldDecorator('project_url', {
 							rules: [{ required: true, message: '请输入项目链接!' }],
 						})(
 							<Input placeholder="链接"/>
@@ -197,7 +200,7 @@ class ProjectList extends Component {
 			        	</Form.Item>
 			        </Form.Item>
 			        <Form.Item label="项目状态">
-			        	<Select defaultValue="1" style={{ width: 120 }} onChange={this.handleChange}>
+			        	<Select defaultValue="1" style={{ width: 120 }} onChange={this.handleChangeStatus}>
 					      <Option value="0">待上线</Option>
 					      <Option value="1">已上线</Option>
 					    </Select>
@@ -258,7 +261,7 @@ class ProjectList extends Component {
 		this.setState({
       		loading: true,
     	});
-    	project.searchProjectList(this.state.keyword,this.state.type).then(res=>{
+    	project.searchProjectList(this.state.keyword,this.state.searchStatus).then(res=>{
     		let projectList = []
 			projectList = projectList.concat(res.data.projectList)
 			this.setState({
@@ -268,30 +271,39 @@ class ProjectList extends Component {
 			})
     	})
     }
-    handleChange = (value)=>{
-    	this.state.addStatus = value;
+    handleChangeStatus = (value)=>{
+    	console.log(value)
+    	this.setState({
+    		projctStatus:value
+    	})
 	}
     //删除标签
-    handleDelete(val){
-    	project.delProject(val).then(res=>{
-    		let projectList = [...this.state.projectList]
-			for(let i = 0; i < projectList.length; i++){
-				if(projectList[i].key == val){
-					projectList.splice(i,1)
-					break;
+    handleDelete(val,record){
+    	project.delProject(record._id).then(res=>{
+    		if(res.code == 200){
+    			message.success("删除成功~")
+    			let projectList = [...this.state.projectList]
+				for(let i = 0; i < projectList.length; i++){
+					if(projectList[i].key == val){
+						projectList.splice(i,1)
+						break;
+					}
 				}
-			}
-			this.setState({
-				projectList
-			})
+				this.setState({
+					projectList
+				})
+    		}else{
+    			message.error("删除失败~")
+    		}
+
     	})
 
     }
         //修改type
-    handleChangeType = (type)=> {
+    handleChangeType = (searchStatus)=> {
 	    this.setState(
 	      {
-	        type,
+	        searchStatus,
 	      },
 	      () => {
 	        this.handleSearch();
@@ -312,12 +324,11 @@ class ProjectList extends Component {
   	};	
   	handleSubmit = e => {
 	    e.preventDefault();
-	    console.log(this.state.addStatus)
 	    this.props.form.validateFields((err, values) => {
 	      if (!err) {
-	      	values.startTime = values.startTime.valueOf()
-	      	values.endTime = values.endTime.valueOf()
-	      	values.status = this.state.addStatus
+	      	values.project_startTime = values.startTime.valueOf()
+	      	values.project_endTime = values.endTime.valueOf()
+	      	values.project_status = this.state.projctStatus
 	      	project.addProject(values).then(res=>{
   				this.setState({
 					visible: false

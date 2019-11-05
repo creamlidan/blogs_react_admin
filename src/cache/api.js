@@ -57,11 +57,22 @@ export const user = {
     }).catch(function (error) {
         return requestHandle(error.response);
     });
+  },
+  changeType(id,type){
+    let url= "/api/user/changeType";
+    return axios.post(url,{
+      id,
+      type
+    }).then(res=>{
+        return requestHandle(res);
+    }).catch(function (error) {
+        return requestHandle(error.response);
+    });
   }
 }
 export const article = {
   articleList(){
-    let url= "/api/articleList";
+    let url= "/api/article/articleList";
     return axios.get(url,{
         params:{
           open_id:getLocalStore("open_id")
@@ -73,13 +84,55 @@ export const article = {
       });
   },
   searchArticleList(keyword,type,pageNum,pageSize){
-    let url= "/api/searchArticleList";
+    let url= "/api/article/searchList";
     return axios.post(url,{
       keyword,
       type,
       pageNum,
       pageSize
     }).then(res=>{
+        return requestHandle(res);
+    }).catch(function (error) {
+        return requestHandle(error.response);
+    });
+  },
+  changeArticleStatus(id,articleStatus){
+    let url= "/api/article/changeArticleStatus";
+    return axios.post(url,{
+      id,
+      articleStatus
+    }).then(res=>{
+        return requestHandle(res);
+    }).catch(function (error) {
+        return requestHandle(error.response);
+    });
+  },
+  articleWrite(params){
+    let url="/api/article/articleWrite"
+    return axios.post(url,params)
+    .then(res=>{
+        return requestHandle(res);
+    }).catch(function (error) {
+        return requestHandle(error.response);
+    });
+  },
+  delArticle(_id){
+    let url="/api/article/delArticle"
+    return axios.post(url,{
+      id:_id
+    })
+    .then(res=>{
+        return requestHandle(res);
+    }).catch(function (error) {
+        return requestHandle(error.response);
+    });
+  },
+  searchOne(_id){
+    let url="/api/article/searchOne"
+    return axios.post(url,{
+      id:_id
+    })
+    .then(res=>{
         return requestHandle(res);
     }).catch(function (error) {
         return requestHandle(error.response);
@@ -88,8 +141,9 @@ export const article = {
 }
 
 export const leave = {
+  //留言列表
   leaveList(){
-    let url= "/api/leaveList";
+    let url= "/api/leave/leaveList";
     return axios.get(url,{
       params:{
         open_id:getLocalStore("open_id")
@@ -100,8 +154,9 @@ export const leave = {
         return requestHandle(error.response);
     });
   },
+  //通过搜索刷选的留言列表
   searchLeaveList(keyword,type,pageNum,pageSize){
-    let url= "/api/searchLeaveList";
+    let url= "/api/leave/searchLeaveList";
     return axios.post(url,{
       keyword,
       type,
@@ -113,22 +168,47 @@ export const leave = {
         return requestHandle(error.response);
     });
   },
-  replyContent(id,content){
-    let url="/api/replyContent";
+  //回复留言
+  replyContent(id,writeBack){
+    let url="/api/leave/replyContent";
     return axios.post(url,{
-      open_id:getLocalStore("open_id"),
       id,
-      content
-    })
+      writeBack
+    }).then(res=>{
+        return requestHandle(res);
+    }).catch(function (error) {
+        return requestHandle(error.response);
+    });
+  },
+  //删除留言的回复信息
+  delReplyContent(id){
+    let url="/api/leave/delReplyContent";
+    return axios.post(url,{
+      id
+    }).then(res=>{
+        return requestHandle(res);
+    }).catch(function (error) {
+        return requestHandle(error.response);
+    });
+  },
+  settingShow(id,leave_show){
+    let url="/api/leave/settingShow";
+    return axios.post(url,{
+      id,
+      leave_show
+    }).then(res=>{
+        return requestHandle(res);
+    }).catch(function (error) {
+        return requestHandle(error.response);
+    });
   }
 }
 
 export const label ={
   labelList(keyword){
-    let url= "/api/labelList";
+    let url= "/api/label/labelList";
     return axios.get(url,{
       params:{
-        open_id:getLocalStore("open_id"),
         keyword
       }
     }).then(res=>{
@@ -137,11 +217,20 @@ export const label ={
         return requestHandle(error.response);
     });
   },
-  addLabel(label){
-    let url= "/api/replyContent";
+  addLabel(labelName){
+    let url= "/api/label/addLabel";
     return axios.post(url,{
-      open_id:getLocalStore("open_id"),
-      label
+      labelName
+    }).then(res=>{
+        return requestHandle(res);
+    }).catch(function (error) {
+        return requestHandle(error.response);
+    });
+  },
+  delLabel(id){
+    let url="/api/label/delLabel";
+    return axios.post(url,{
+      id
     }).then(res=>{
         return requestHandle(res);
     }).catch(function (error) {
@@ -150,11 +239,11 @@ export const label ={
   }
 }
 export const classify ={
-  classifyList(){
-    let url= "/api/classifyList";
+  classifyList(keyword){
+    let url= "/api/classify/classifyList";
     return axios.get(url,{
       params:{
-        open_id:getLocalStore("open_id")
+        keyword
       }
     }).then(res=>{
         return requestHandle(res);
@@ -162,11 +251,20 @@ export const classify ={
         return requestHandle(error.response);
     });
   },
-  addClassify(classify){
-    let url= "/api/replyContent";
+  addClassify(classifyName){
+    let url= "/api/classify/addClassify";
     return axios.post(url,{
-      open_id:getLocalStore("open_id"),
-      classify
+      classifyName
+    }).then(res=>{
+        return requestHandle(res);
+    }).catch(function (error) {
+        return requestHandle(error.response);
+    });
+  },
+  delClassify(id){
+    let url="/api/classify/delClassify";
+    return axios.post(url,{
+      id
     }).then(res=>{
         return requestHandle(res);
     }).catch(function (error) {
@@ -175,11 +273,12 @@ export const classify ={
   }
 }
 export const project ={
-  projectList(){
-    let url= "/api/projectList";
+  projectList(keyword,project_status){
+    let url= "/api/project/projectList";
     return axios.get(url,{
       params:{
-        open_id:getLocalStore("open_id")
+        keyword,
+        project_status
       }
     }).then(res=>{
         return requestHandle(res);
@@ -187,12 +286,11 @@ export const project ={
         return requestHandle(error.response);
     });
   },
-  searchProjectList(keyword,type){
-    let url= "/api/searchProjectList";
+  searchProjectList(keyword,project_status){
+    let url= "/api/project/searchProjectList";
     return axios.post(url,{
       keyword,
-      type,
-      open_id:getLocalStore("open_id")
+      project_status
     }).then(res=>{
         return requestHandle(res);
     }).catch(function (error) {
@@ -200,7 +298,7 @@ export const project ={
     });
   },
   addProject(values){
-    let url= "/api/replyContent";
+    let url= "/api/project/addProject";
     return axios.post(url,{
       ...values
     }).then(res=>{
@@ -209,10 +307,10 @@ export const project ={
         return requestHandle(error.response);
     });
   },
-  delProject(key){
-    let url= "/api/replyContent";
+  delProject(id){
+    let url= "/api/project/delProject";
     return axios.post(url,{
-      key
+      id
     }).then(res=>{
         return requestHandle(res);
     }).catch(function (error) {

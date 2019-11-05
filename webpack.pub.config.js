@@ -10,7 +10,7 @@ const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 
 module.exports = {
   entry: { // 配置入口节点
-    app: path.join(__dirname, './src/main.js'),
+    app: ["babel-polyfill", "./src/main.js"]
     vendors1: ['jquery'] // 把要抽离的第三方包的名称，放到这个数组中
   },
   output: {

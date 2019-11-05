@@ -1,9 +1,9 @@
 import React,{ Component } from 'react';
 import {
 	Row,Col,Card,Form,Input,Button,
-	Table,notification,Popconfirm,Switch,Tag,Select,Typography,Icon
+	Table,notification,Popconfirm,Switch,Tag,Select,Typography,Icon,message
 } from 'antd';
-import { article } from '@c/api'
+import { article,classify,label } from '@c/api'
 const FormItem = Form.Item,
 	{ Paragraph } = Typography;
 import moment from 'moment';
@@ -42,10 +42,12 @@ export default class ArticleList extends Component{
 					title: '标签',
 					dataIndex: 'tag',
 					sorter: true,
+					render:val=><div>{this._findId(val,'label')}</div>
 		        },{
 					title: '分类',
 					dataIndex: 'classify',
 					sorter: true,
+					render:val =><div>{this._findId(val,'classify')}</div>
 		        },{
 					title: '待处理评论数',
 					dataIndex: 'untreatedCommentNums',
@@ -61,19 +63,31 @@ export default class ArticleList extends Component{
 					render: val => <span>{moment(val).format('YYYY-MM-DD HH:mm:ss')}</span>
 		        },{
 					title: '状态',
-					dataIndex: 'status',
+					dataIndex: 'articleStatus',
 					sorter: true,
 					render: (val,record) =>
 		            	val ? <Popconfirm title="确定取消发布?" onConfirm={() => this.handleSetting(val,record,0)}>
-								<Tag color="green">已发布 <Icon type="setting" /></Tag>
+								<Tag color="green">已发布<Icon type="setting" /></Tag>
 				            </Popconfirm>
 				            : <Popconfirm title="确定马上发布?" onConfirm={() => this.handleSetting(val, record,1)}>
 								<Tag color="red">草稿<Icon type="setting" /></Tag>
 				            </Popconfirm>
 		        },{
 					title: '是否原创',
-					dataIndex: 'isAuto',
-					render: val => val == 0?<Tag color="green">原创</Tag>:(val == 1?<Tag color="blue">混合</Tag>:<Tag color="volcano">转载</Tag>)
+					dataIndex: 'articleType',
+					render: val => val == 0?<span style={{color:'green'}}>原创</span>:(val == 1?<span style={{color:'blue'}}>混合</span>:<span style={{color:'volcano'}}>转载</span>)
+		        },{
+					title: '操作',
+					dataIndex: 'articleOperation',
+					render: (val,record) => val == 1?(
+						<div>
+							<Popconfirm title="确定删除此条文章?"  onConfirm={() => this.delArticle(val,record)}>
+								<Tag color="red" style={{marginRight:'6px'}}>删除</Tag>
+			            	</Popconfirm>
+			            	<a href={'/article/write/'+record._id}>
+								<Tag color="orange">编辑</Tag>
+			            	</a>
+						</div>):null
 		        }
 		    ],
 		    articleList:[]
@@ -87,7 +101,7 @@ export default class ArticleList extends Component{
 		          <Col md={24} sm={24}>
 		            <FormItem>
 		              <Input
-		                placeholder="标题/描述"
+		                placeholder="标题"
 		                value={this.state.keyword}
 		                onChange={this.handleChangeKeyword}
 		              />
@@ -123,8 +137,37 @@ export default class ArticleList extends Component{
       		</Form>
 		)
 	}
+	_findId = (id,par) =>{
+		let $name = null;
+		if(par == 'classify'){
+			this.state.classifyList && this.state.classifyList.map(item=>{
+				if(item._id == id){
+					$name = item.classify_name
+				}
+			})
+		}else{
+			this.state.labelList && this.state.labelList.map(item=>{
+				if(item._id == id){
+					$name = item.label_name
+				}
+			})
+		}
+		return(<span>{$name}</span>)
+	}
 	componentDidMount(){
 		this.getData();
+		//请求分类classify
+		classify.classifyList().then(res=>{
+			this.setState({
+				classifyList:res.data.classifyList
+			})
+		})
+		//请求标配label
+		label.labelList().then(res=>{
+			this.setState({
+				labelList:res.data.labelList
+			})
+		})
 	}
 	//初始化数据
 	getData(){
@@ -159,21 +202,29 @@ export default class ArticleList extends Component{
 					columns={this.state.columns}
 					loading={this.state.loading}
 					bordered
+					rowKey={record => record._id}
 					dataSource={this.state.articleList}
 	            />
       		</div>
         )
 	}
-	handleSetting(val,record,status){
-		let articleList = [...this.state.articleList]
-		for(let i = 0; i < articleList.length; i++){
-			if(articleList[i].key == record.key){
-				articleList[i].status = status;
-				break;
+	handleSetting(val,record,articleStatus){
+		article.changeArticleStatus(record._id,articleStatus).then(res=>{
+			if(res.code == 200){
+				message.success('修改成功~');
+				let articleList = [...this.state.articleList]
+				for(let i = 0; i < articleList.length; i++){
+					if(articleList[i].key == record.key){
+						articleList[i].articleStatus = articleStatus;
+						break;
+					}
+				}
+				this.setState({
+					articleList
+				})
+			}else{
+				message.error("修改出错！")
 			}
-		}
-		this.setState({
-			articleList
 		})
 	}
 	//修改type
@@ -219,5 +270,27 @@ export default class ArticleList extends Component{
 				this.handleSearch();
 			}
 	    );
+  	}
+  	//删除文章
+  	delArticle = (val,record)=>{
+  		article.delArticle(record._id).then(res=>{
+  			if(res.code == 200){
+		  		let articleList = [...this.state.articleList]
+				for(let i = 0; i < articleList.length; i++){
+					if(articleList[i]._id == record._id){
+						articleList.splice(i,1);
+						break;
+					}
+				}
+				this.setState({
+					articleList
+				})
+				message.success('删除成功~');
+		  	}
+  		})
+  	}
+  	//新增文字
+  	handleAdd = () =>{
+  		this.props.history.push("/article/write")
   	}
 }

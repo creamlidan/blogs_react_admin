@@ -2,7 +2,7 @@ import React,{ Component } from 'react';
 import {
 	Row,Col,Card,Form,Input,Button,
 	Table,notification,Popconfirm,Switch,Tag,Select,Typography,Icon,
-	Avatar
+	Avatar,message
 } from 'antd';
 import { user } from '@c/api'
 const FormItem = Form.Item,
@@ -38,17 +38,24 @@ export default class userList extends Component {
 		          title: '类型',
 		          dataIndex: 'type',
 		          // 0：管理员 1:普通用户
-		          render: val =>
-		            !Boolean(val) ? <Tag color="green">管理员{Boolean(val)}</Tag> : <Tag color="blue">{Boolean(val)}普通用户</Tag>,
+		          render: (val,record) =>
+		            !Boolean(val) ?
+		            	<Popconfirm title="确定要取消此用户管理员权限?" cancelText="取消" okText="确定" onConfirm={() => this.handleAdmin(val,record,1)}>
+							<Tag color="green">管理员{Boolean(val)}</Tag> 
+			            </Popconfirm>
+			            :
+			            <Popconfirm title="确定要为该用户增加管理员权限?" cancelText="取消" okText="确定" onConfirm={() => this.handleAdmin(val,record,0)}>
+							<Tag color="blue">{Boolean(val)}普通用户</Tag>
+			            </Popconfirm>
 		        },{
 		          title: '用户状态',
 		          dataIndex: 'status',
 		          // 0：禁用 1：启用
 		          render: (val,record) =>
-		            val ? <Popconfirm title="确定禁止此用户操作?" onConfirm={() => this.handleSetting(val,record,0)}>
+		            val ? <Popconfirm title="确定禁止此用户操作?" cancelText="取消" okText="确定" onConfirm={() => this.handleSetting(val,record,0)}>
 							<Tag color="green">启用 <Icon type="setting" /></Tag>
 			            </Popconfirm>
-			            : <Popconfirm title="恢复此用户操作?" onConfirm={() => this.handleSetting(val, record,1)}>
+			            : <Popconfirm title="恢复此用户操作?" cancelText="取消" okText="确定" onConfirm={() => this.handleSetting(val, record,1)}>
 							<Tag color="red">禁用 <Icon type="setting" /></Tag>
 			            </Popconfirm>
 		        },{
@@ -143,16 +150,41 @@ export default class userList extends Component {
     //禁止此用户在论坛操作
     handleSetting(text, record,status){
     	user.changeStatus(record._id,status).then(res=>{
-			let userList = [...this.state.userList]
-			for(let i = 0; i < userList.length; i++){
-				if(userList[i]._id == record._id){
-					userList[i].status = status;
-					break;
+    		if(res.code == 200){
+    			message.success('修改成功~');
+	    		let userList = [...this.state.userList]
+				for(let i = 0; i < userList.length; i++){
+					if(userList[i]._id == record._id){
+						userList[i].status = status;
+						break;
+					}
 				}
-			}
-			this.setState({
-				userList
-			})
+				this.setState({
+					userList
+				})
+    		}else{
+    			message.error('修改出错！');
+    		}
+    	})
+    }
+	//修改此用户权限
+	handleAdmin(text, record,type){
+    	user.changeType(record._id,type).then(res=>{
+    		if(res.code == 200){
+    			message.success('修改成功~');
+	    		let userList = [...this.state.userList]
+				for(let i = 0; i < userList.length; i++){
+					if(userList[i]._id == record._id){
+						userList[i].type = type;
+						break;
+					}
+				}
+				this.setState({
+					userList
+				})
+    		}else{
+    			message.error('修改出错！');
+    		}
     	})
     }
     //修改type

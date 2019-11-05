@@ -19,18 +19,20 @@ export default class LabelList extends Component {
 			columns: [
 		        {
 		          title: '标题',
-		          dataIndex: 'title',
+		          dataIndex: 'label_name',
 		        },{
 		          title: '创建时间',
-		          dataIndex: 'createTime',
+		          dataIndex: 'create_time',
 		          sorter: true,
 		          render: val => <span>{moment(val).format('YYYY-MM-DD HH:mm:ss')}</span>,
 		        },{
 		          title: '操作',
 		          dataIndex: 'id',
 		          // 0：禁用 1：启用
-		          render: val => <Popconfirm title="确定要删除此标签?" onConfirm={() => this.handleDelete(val)}>
-							<a href="">删除</a>
+		          render: (val,record) => 
+		          		record.label_name == "其它"? <span style={{color:'#999'}}>不可删除</span> :
+		          		<Popconfirm title="如果此标签下有关联文章,将全部转移到其它标签下,确定要删除此标签?" onConfirm={() => this.handleDelete(val,record)}>
+							<Tag color="red">删除</Tag>
 			            </Popconfirm>
 		        }
 		    ],
@@ -78,7 +80,7 @@ export default class LabelList extends Component {
 	//初始化数据
 	getData(){
 		label.labelList().then(res=>{
-			let labelList = [...this.state.labelList]
+			let labelList = []
 			labelList = labelList.concat(res.data.labelList)
 			this.setState({
 				labelList
@@ -88,14 +90,15 @@ export default class LabelList extends Component {
     render() {
     	const { visible} = this.state;
         return (
-      		<div className="">
-        		<div className="">{this._renderSimpleForm()}</div>
+      		<div>
+        		<div>{this._renderSimpleForm()}</div>
 	            <Table
 					columns={this.state.columns}
 					loading={this.state.loading}
 					bordered
 					pagination={false}
 					dataSource={this.state.labelList}
+					rowKey="_id"
 	            />
 	            <Modal
 		          title="新增标签"
@@ -131,34 +134,49 @@ export default class LabelList extends Component {
     	})
     }
     //删除标签
-    handleDelete(val){
-		let labelList = [...this.state.labelList]
-		for(let i = 0; i < labelList.length; i++){
-			if(labelList[i].id == val){
-				labelList.splice(i,1)
-				break;
+    handleDelete(val,record){
+    	label.delLabel(record._id).then(res=>{
+			if(res.code == 200){
+				message.success(res.data.message)
+				let labelList = [...this.state.labelList]
+				for(let i = 0; i < labelList.length; i++){
+					if(labelList[i].id == record._id){
+						labelList.splice(i,1)
+					}
+				}
+				this.setState({
+					labelList
+				})
+			}else{
+				message.error("删除标签失败~")
 			}
-		}
-		this.setState({
-			labelList
 		})
     }
+    //显示新增标签弹出框
     showModal = () => {
 	    this.setState({
 			visible: true,
 	    });
   	};
+  	//确认新增标签
   	handleOk = () => {
   		if(this.state.addLabel){
   			label.addLabel(this.state.addLabel).then(res=>{
-  				this.setState({
-					visible: false
-				});
+  				if(res.code == 200){
+  					message.success('添加成功~');
+	  				this.getData();
+	  				this.setState({
+						visible: false
+					});
+  				}else{
+  					message.error('标签添加失败');
+  				}
   			})
   		}else{
   			message.error('请输入需要添加的标签');
   		}
   	};	
+  	//编辑标签的值
   	changeLabel = (event)=> {
 		this.setState({
 		  addLabel: event.target.value,

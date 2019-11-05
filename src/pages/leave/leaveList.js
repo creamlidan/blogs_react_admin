@@ -33,15 +33,37 @@ export default class LeaveList extends Component {
 					title: '内容',
 					dataIndex: 'leave_desc',
 					render: val => <div title={val}>
-							<Paragraph copyable>{val.substring(0,20)}...</Paragraph>
+							<Paragraph copyable>{val}...</Paragraph>
 						</div>
 		        },{
 		          title: '状态',
 		          dataIndex: 'leave_status',
-		          // 0：禁用 1：启用
+		          // 0：未回复 1：已回复
 		          render: (val,record) =>
 		            !val ? <Tag color="red" onClick={() => this.propMessage(val, record)}>未回复</Tag>
-			            : <Tag color="green">已回复</Tag>
+			            : <div>
+			            	<Tag color="green">已回复</Tag>
+			            	<div style={{color:'#999'}}>
+			            		@回复:{record.writeBack}
+			            		<Popconfirm title="确定要屏蔽掉此条留言吗?" onConfirm={()=>this.handleRevocation(val,record)}>
+									<Tag style={{marginLeft:'6px'}}>撤销</Tag>
+					            </Popconfirm>
+			            		
+			            	</div>
+			            </div>
+		        },{
+		          title: '是否显示',
+		          dataIndex: 'leave_show',
+		          // 0：不显示 1：显示
+		          render: (val,record) =>
+		            val ? 
+		            	<Popconfirm title="确定要屏蔽掉此条留言吗?" onConfirm={() => this.handleSettingShow(val,record,0)}>
+							<Tag color="green">已显示<Icon type="setting" style={{marginLeft:'6px'}}/></Tag>
+			            </Popconfirm>:
+			            <Popconfirm title="确定要显示此条留言吗?" onConfirm={() => this.handleSettingShow(val,record,1)}>
+							<Tag color="red">已屏蔽<Icon type="setting" style={{marginLeft:'6px'}}/></Tag>
+			            </Popconfirm>
+						
 		        },{
 		          title: '创建时间',
 		          dataIndex: 'create_time',
@@ -120,11 +142,12 @@ export default class LeaveList extends Component {
 					loading={this.state.loading}
 					bordered
 					dataSource={this.state.leaveList}
+					rowKey="_id"
 	            />
 	            <Modal
 		          title="回复留言:"
 		          visible={this.state.isShowMessage}
-		          onOk={this.handleOk}
+		          onOk={this.handleReplyOk}
 		          onCancel={this.handleCancel}
 		          cancelText="取消"
 		          okText="确认回复"
@@ -139,7 +162,6 @@ export default class LeaveList extends Component {
 		this.setState({
 		  keyword: event.target.value,
 		});
-		console.log(this.state.keyword)
 	}
 	changeReplyContent = (event)=>{
 		this.setState({
@@ -177,35 +199,88 @@ export default class LeaveList extends Component {
   	propMessage(val,record){
 		this.setState({
 			isShowMessage:true,
-			currentReplyId:record.id
+			currentReplyId:record._id
 		})
   	}
-  	handleOk = e => {
+  	//回复留言
+  	handleReplyOk = e => {
   		if(this.state.replyContent){
 			leave.replyContent(this.state.currentReplyId,this.state.replyContent).then(res=>{
-				let leaveList = [...this.state.leaveList]
-				for(let i = 0; i < leaveList.length; i++){
-					if(leaveList[i].id == this.state.currentReplyId){
-						leaveList[i].leave_status = 1;
-						break;
+				if(res.code == 200){
+					let leaveList = [...this.state.leaveList]
+					for(let i = 0; i < leaveList.length; i++){
+						if(leaveList[i]._id == this.state.currentReplyId){
+							leaveList[i] = {
+								...leaveList[i],
+								leave_status:1,
+								writeBack:this.state.replyContent
+							}
+							break;
+						}
 					}
+					this.setState({
+						leaveList,
+						isShowMessage: false,
+						replyContent:'',
+						currentReplyId:''
+					})
+				}else{
+					message.error('回复留言失败~');
 				}
-				this.setState({
-					leaveList,
-					isShowMessage: false,
-					replyContent:'',
-					currentReplyId:''
-				})
 			})
   		}else{
   			message.error('回复留言内容必须填写');
   		}
-
 	}
-
+	//取消留言
 	handleCancel = e => {
 		this.setState({
 		  isShowMessage: false,
 		});
+	}
+	//删除留言回复
+	handleRevocation(val,record){
+		leave.delReplyContent(record._id).then(res=>{
+			if(res.code == 200){
+				let leaveList = [...this.state.leaveList]
+				for(let i = 0; i < leaveList.length; i++){
+					if(leaveList[i]._id == record._id){
+						leaveList[i] = {
+							...leaveList[i],
+							leave_status:0,
+							writeBack:''
+						}
+						break;
+					}
+				}
+				this.setState({
+					leaveList
+				})
+			}else{
+				message.error('删除留言失败~');
+			}
+		})
+	}
+	//显示隐藏留言内容
+	handleSettingShow(val,record,leave_show){
+		leave.settingShow(record._id,leave_show).then(res=>{
+			if(res.code == 200){
+				let leaveList = [...this.state.leaveList]
+				for(let i = 0; i < leaveList.length; i++){
+					if(leaveList[i]._id == record._id){
+						leaveList[i] = {
+							...leaveList[i],
+							leave_show,
+						}
+						break;
+					}
+				}
+				this.setState({
+					leaveList
+				})
+			}else{
+				message.error('更新失败~');
+			}
+		})
 	}
 }
