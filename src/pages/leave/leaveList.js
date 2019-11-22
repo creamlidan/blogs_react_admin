@@ -189,9 +189,6 @@ export default class LeaveList extends Component {
 			{
 				pageNum,
 				pageSize,
-			},
-			() => {
-				this.handleSearch();
 			}
 	    );
   	}

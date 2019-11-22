@@ -87,7 +87,6 @@ class ArticleWrite extends Component{
       			params.articleStatus = this.state.articleStatus;
       			params.articleType = this.state.articleType;
       			params.content = this.state.content;
-      			console.log(values)
       			if(this.props.match.params.id){
       				params._id = this.props.match.params.id
       			}

@@ -25,9 +25,6 @@ export default class userList extends Component {
 		          title: '用户名',
 		          dataIndex: 'name',
 		        },{
-		          title: '密码',
-		          dataIndex: 'password',
-		        },{
 		          title: '邮箱',
 		          dataIndex: 'email',
 		        },{
@@ -210,7 +207,7 @@ export default class userList extends Component {
       		loading: true,
     	});
     	let $state = this.state
-    	user.searchUserList($state.keyword,$state.type,$state.pageNum,$state.pageSize).then(res=>{
+    	user.searchUserList($state.keyword,$state.type).then(res=>{
     		let userList = []
 			userList = userList.concat(res.data.userList)
 			this.setState({
@@ -226,9 +223,6 @@ export default class userList extends Component {
 			{
 				pageNum,
 				pageSize,
-			},
-			() => {
-				this.handleSearch();
 			}
 	    );
   	}

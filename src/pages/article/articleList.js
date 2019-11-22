@@ -265,9 +265,6 @@ export default class ArticleList extends Component{
 			{
 				pageNum,
 				pageSize,
-			},
-			() => {
-				this.handleSearch();
 			}
 	    );
   	}
@@ -292,5 +289,8 @@ export default class ArticleList extends Component{
   	//新增文字
   	handleAdd = () =>{
   		this.props.history.push("/article/write")
+  	}
+  	handleTest= () =>{
+  		this.props.history.push("/leave/list")
   	}
 }

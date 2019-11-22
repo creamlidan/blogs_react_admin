@@ -21,6 +21,9 @@ export default class LabelList extends Component {
 		          title: '标题',
 		          dataIndex: 'label_name',
 		        },{
+		          title: '文章数量',
+		          dataIndex: 'article_nums',
+		        },{
 		          title: '创建时间',
 		          dataIndex: 'create_time',
 		          sorter: true,
@@ -138,15 +141,7 @@ export default class LabelList extends Component {
     	label.delLabel(record._id).then(res=>{
 			if(res.code == 200){
 				message.success(res.data.message)
-				let labelList = [...this.state.labelList]
-				for(let i = 0; i < labelList.length; i++){
-					if(labelList[i].id == record._id){
-						labelList.splice(i,1)
-					}
-				}
-				this.setState({
-					labelList
-				})
+				this.getData();
 			}else{
 				message.error("删除标签失败~")
 			}

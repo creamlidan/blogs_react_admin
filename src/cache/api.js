@@ -24,23 +24,17 @@ axios.interceptors.response.use(function(response){
 export const user = {
 	userList(){
 		let url= "/api/user/List";
-		return axios.get(url,{
-        params:{
-          open_id:getLocalStore("open_id")
-        }
-	    }).then(res=>{
+		return axios.get(url).then(res=>{
 	        return requestHandle(res);
 	    }).catch(function (error) {
 	        return requestHandle(error.response);
 	    });
 	},
-  searchUserList(keyword,type,pageNum,pageSize){
+  searchUserList(keyword,type){
     let url= "/api/user/searchList";
     return axios.post(url,{
       keyword,
-      type,
-      pageNum,
-      pageSize
+      type
     }).then(res=>{
         return requestHandle(res);
     }).catch(function (error) {
@@ -83,13 +77,11 @@ export const article = {
           return requestHandle(error.response);
       });
   },
-  searchArticleList(keyword,type,pageNum,pageSize){
+  searchArticleList(keyword,type){
     let url= "/api/article/searchList";
     return axios.post(url,{
       keyword,
-      type,
-      pageNum,
-      pageSize
+      type
     }).then(res=>{
         return requestHandle(res);
     }).catch(function (error) {
@@ -155,13 +147,11 @@ export const leave = {
     });
   },
   //通过搜索刷选的留言列表
-  searchLeaveList(keyword,type,pageNum,pageSize){
+  searchLeaveList(keyword,type){
     let url= "/api/leave/searchLeaveList";
     return axios.post(url,{
       keyword,
-      type,
-      pageNum,
-      pageSize
+      type
     }).then(res=>{
         return requestHandle(res);
     }).catch(function (error) {

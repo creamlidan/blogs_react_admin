@@ -14,8 +14,14 @@ const breadcrumbNameMap = {
     '/leave/list':'留言列表'
 }
 export default class BreadcrumbCustom extends Component{
-  static contextTypes ={
-    router:PropTypes.object
+  static contextTypes = {
+      router: PropTypes.shape({
+        history: PropTypes.shape({
+          push: PropTypes.func.isRequired,
+          replace: PropTypes.func.isRequired,
+          createHref: PropTypes.func.isRequired
+        }).isRequired
+      }).isRequired
   }
   constructor(props,context){
     super(props,context);
@@ -25,13 +31,15 @@ export default class BreadcrumbCustom extends Component{
     }
   }
   getPath(){
-    this.state.pathSnippet = this.context.router.history.location.pathname.split('/').filter(i=>i);
+    let routerData = this.context.router.history.location.pathname.split('/').filter(i=>i)
     let BreadcrumbList = [];
-    this.state.pathSnippet.forEach((item,index)=>{
-      const url = `/${this.state.pathSnippet.slice(0, index + 1).join('/')}`;
+    routerData.forEach((item,index)=>{
+      const url = `/${routerData.slice(0, index + 1).join('/')}`;
       BreadcrumbList.push(this._renderItem(url))
     })
-    this.state.extraBreadcrumbItems = BreadcrumbList
+    this.setState({
+      extraBreadcrumbItems:BreadcrumbList
+    })
   }
   _renderItem(url){
     return (
@@ -40,10 +48,7 @@ export default class BreadcrumbCustom extends Component{
       </Breadcrumb.Item>
     )
   }
-  componentWillMount() {
-    this.getPath();
-  }
-  componentWillReceiveProps(){
+  UNSAFE_componentWillMount() {
     this.getPath();
   }
   render(){

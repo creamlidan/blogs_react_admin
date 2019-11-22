@@ -9,10 +9,23 @@ const { SubMenu } = Menu;
 const { Header, Content, Sider } = Layout;
 
 class Frame extends Component{
-	static contextTypes ={
-		router:PropTypes.object
+	static contextTypes = {
+	    router: PropTypes.shape({
+	      history: PropTypes.shape({
+	        push: PropTypes.func.isRequired,
+	        replace: PropTypes.func.isRequired,
+	        createHref: PropTypes.func.isRequired
+	      }).isRequired
+	    }).isRequired
+	}
+	componentDidMount() {
+		this.changeMenuCurrent();
+	    this.context.router.history.listen(() => {
+	    	this.changeMenuCurrent();
+	    })
 	}
 	constructor(props,context) {
+		console.log(context)
 		super(props,context)
 		this.state = {
 			openKeys:[],
@@ -37,6 +50,27 @@ class Frame extends Component{
 				openKeys:[latestOpenKey]
 			})
 		}
+	}
+	changeMenuCurrent = ()=>{
+		let routerData = this.context.router.history.location.pathname.split('/').filter(i=>i)
+		if(routerData.length == 0){
+  			this.setState({
+  				openKeys:[],
+  				current:null
+  			})
+  		}else{
+	  		this.onOpenChange([routerData[0]]);
+	    	menuList.forEach((item,index)=>{
+	    		if(item.key == routerData[0]){
+	    			let itemData = item.menuItem;
+	    			for(let i = 0; i < itemData.length; i++){
+	    				if(itemData[i].name == routerData[1]){
+	    					this.handleClick(itemData[i].key)
+	    				}
+	    			}
+	    		}
+	    	})
+  		}
 	}
 	handleClick = (key)=>{
 		this.setState({
@@ -124,28 +158,5 @@ class Frame extends Component{
 			<Link to={Item.path}>{Item.item_text}</Link>
 		</Menu.Item>
 	}
-	componentWillMount() {
-		let routerData = this.context.router.history.location.pathname.split('/').filter(i=>i)
-    	this.onOpenChange([routerData[0]]);
-    	menuList.forEach((item,index)=>{
-    		if(item.key == routerData[0]){
-    			let itemData = item.menuItem;
-    			for(let i = 0; i < itemData.length; i++){
-    				if(itemData[i].name == routerData[1]){
-    					this.handleClick(itemData[i].key)
-    				}
-    			}
-    		}
-    	})
-  	}
-  	componentWillReceiveProps(){
-  		let routerData = this.context.router.history.location.pathname.split('/').filter(i=>i)
-  		if(routerData.length == 0){
-  			this.setState({
-  				openKeys:[],
-  				current:null
-  			})
-  		}
-  	}
 }
 export default Frame

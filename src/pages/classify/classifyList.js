@@ -21,6 +21,9 @@ export default class ClassifyList extends Component {
 		          title: '标题',
 		          dataIndex: 'classify_name',
 		        },{
+		          title: '文章数量',
+		          dataIndex: 'article_nums',
+		        },{
 		          title: '创建时间',
 		          dataIndex: 'create_time',
 		          sorter: true,
@@ -136,16 +139,8 @@ export default class ClassifyList extends Component {
     handleDelete(val,record){
     	classify.delClassify(record._id).then(res=>{
     		if(res.code == 200){
-    			message.error(res.data.message)
-    			let classifyList = [...this.state.classifyList]
-				for(let i = 0; i < classifyList.length; i++){
-					if(classifyList[i].id == record._id){
-						classifyList.splice(i,1)
-					}
-				}
-				this.setState({
-					classifyList
-				})
+    			message.success(res.data.message)
+    			this.getData();
     		}else{
     			message.error("删除分类失败~")
     		}

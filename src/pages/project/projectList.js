@@ -272,7 +272,6 @@ class ProjectList extends Component {
     	})
     }
     handleChangeStatus = (value)=>{
-    	console.log(value)
     	this.setState({
     		projctStatus:value
     	})
